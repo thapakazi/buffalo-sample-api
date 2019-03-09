@@ -1,0 +1,11 @@
+development:
+  dialect: "sqlite3"
+  database: /home/thapakazi/go/src/github.com/thapakazi/myapi_myapi_development.sqlite
+
+test:
+  dialect: "sqlite3"
+  database: /home/thapakazi/go/src/github.com/thapakazi/myapi_myapi_test.sqlite
+
+production:
+  dialect: "sqlite3"
+  database: /home/thapakazi/go/src/github.com/thapakazi/myapi_myapi_production.sqlite

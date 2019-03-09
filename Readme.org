@@ -1,0 +1,142 @@
+#+TITLE: Simple buffalo guidelines
+
+* create new buffalo api
+  1. install buffalo first, make sure your GOPATH is set properly
+  2. crate new app
+     #+begin_src bash
+     buffalo new myapi --api --db-type sqlite3
+     #+end_src
+  3. go inside app and make some adjustments on ~actions/app.go~
+
+     Add the middleware line, its missing there, weird though 
+     #+begin_src go
+import 
+(
+	"github.com/gobuffalo/buffalo-pop/pop/popmw" 
+	...
+)
+
+func App() *buffalo.App {
+	if app == nil {
+		...
+	}
+	...
+	app.Use(popmw.Transaction(models.DB))
+	...
+}
+     #+end_src
+
+  4. start your app
+     #+begin_src bash
+     ADDR=0.0.0.0 PORT=1234 buffalo dev
+     #+end_src
+
+  5. to see your routes
+     #+begin_src bash
+     buffalo routes
+     #+end_src
+
+  6. to create a resource
+     #+begin_src bash
+     buffalo g resource user first_name:text last_name:text  phone_number:text password:text --skip-templates
+     #+end_src
+
+  7. check the pending migration and migrate the db changes
+     #+begin_src bash
+     buffalo db migrate status
+     buffalo db migrate up
+     #+end_src
+
+     In case of postgresql you might need to create a database by self ~my_api_db_name~
+     #+begin_src bash
+     psql -U postgres   # assuming no password or funky pg setup
+     ...
+     create databse my_api_db_name
+     #+end_src
+
+* To test your api
+  1) Create a sample json
+     #+begin_src bash :results drawer
+     cat test/create_user.json
+     #+end_src
+
+     #+RESULTS:
+     :results:
+     {
+       "first_name": "first",
+       "last_name": "last",
+       "phone_number": "phone",
+       "password": "password"
+     }
+     :end:
+
+  2) Install ~httpie:~ https://github.com/jakubroztocil/httpie and test your endpoint
+     - Create a user
+        #+begin_src bash :results drawer
+        http POST localhost:3000/users <  ../myapi/test/create_user.json |jq .
+        #+end_src
+
+        #+RESULTS:
+        :results:
+        {
+          "id": "bc43a818-5801-472d-8ee3-7e2b21bb196c",
+          "created_at": "2019-03-09T23:37:15.14903472+05:45",
+          "updated_at": "2019-03-09T23:37:15.149035767+05:45",
+          "first_name": "first",
+          "last_name": "last",
+          "phone_number": "phone",
+          "password": "password"
+        }
+        :end:
+
+     - list all users:
+        #+begin_src bash :results drawer
+        curl -H Content-type:'application/json' http://localhost:3000/users/ |jq .
+        #+end_src
+
+        #+RESULTS:
+        :results:
+        [
+          {
+            "id": "0d51c2c1-4aef-431e-885d-83016f193a5a",
+            "created_at": "2019-03-09T23:14:45.583556258+05:45",
+            "updated_at": "2019-03-09T23:14:45.583557239+05:45",
+            "first_name": "first",
+            "last_name": "last",
+            "phone_number": "phone",
+            "password": "password"
+          },
+          {
+            "id": "cc9caa1f-8527-408e-ba3f-b67d929c61d0",
+            "created_at": "2019-03-09T23:30:31.010785441+05:45",
+            "updated_at": "2019-03-09T23:30:31.01078629+05:45",
+            "first_name": "first",
+            "last_name": "last",
+            "phone_number": "phone",
+            "password": "password"
+          }
+        ]
+        :end:
+
+     - get a user 
+       #+begin_src bash :results drawer
+        curl -H Content-type:'application/json' localhost:3000/users/0d51c2c1-4aef-431e-885d-83016f193a5a |jq .
+       #+end_src
+
+       #+RESULTS:
+       :results:
+       {
+         "id": "0d51c2c1-4aef-431e-885d-83016f193a5a",
+         "created_at": "2019-03-09T23:14:45.583556258+05:45",
+         "updated_at": "2019-03-09T23:14:45.583557239+05:45",
+         "first_name": "first",
+         "last_name": "last",
+         "phone_number": "phone",
+         "password": "password"
+       }
+       :end:
+
+     - delete a user:
+       #+begin_src bash :results drawer
+        curl -X DELETE localhost:3000/users/bc43a818-5801-472d-8ee3-7e2b21bb196c
+        #+end_src

@@ -1,0 +1,7 @@
+create_table("users") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("first_name", "text", {})
+	t.Column("last_name", "text", {})
+	t.Column("phone_number", "text", {})
+	t.Column("password", "text", {})
+}
